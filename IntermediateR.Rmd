@@ -1,0 +1,293 @@
+---
+title: 'Intermediate R: Statistics for Graduate Students'
+author: "Nnenna Asidianya"
+date: "2/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+# R Markdown
+
+Remove the hashtag # to install R markdown to follow along
+
+```{r}
+#install.packages("rmarkdown")
+```
+
+# Conditionals and Control Flow
+
+## Equality (or not)
+
+```{r}
+#Example 1: Equality 
+
+x=3
+y=4
+x==y
+
+#Example 2: Not equality 
+
+x!=y
+
+#Example 3: Equality of strings. 
+
+user1<-c("userR", "user", "UserR")
+user2<-c("userR", "useR", "UserR")
+user1==user2 #this is a logical vector
+
+#Bonus operation; logical operations for data manipulation
+
+user<-ifelse(user1==user2, "userR", "userR")
+```
+
+## Greater than or less than 
+
+```{r}
+library(tidyverse)
+height <- c(150, 145, 150, 155, 170, 180, 177)#in cm
+weight <- c(60, 55, 90, 54, 75, 80, 76 ) #in kg
+
+#this is a hacky way of doing this. There are better methods below.
+features<-tibble(height, weight)
+ggplot(features, aes(weight, height))+geom_point()+geom_smooth(method = "lm", se=F)
+
+attach(features)
+
+features2<- features[ which(weight<90), ]
+```
+Note: This is an inefficient way to subset the outliers in data. In general I would most likely use 'filter' tidyverse (more on this in another workshop). However, I will come back to the subset function later on. 
+
+  
+## The  & and  | operators (and and or)
+
+```{r}
+#recall
+features
+
+#weight that is equal to 90 and height that is equal to 150
+outlier <-features[ which(weight==90 & height==150), ]
+outlier
+
+#weight that is equal to 90 and height that is equal to 150
+features3<-features[ which(weight==90 | height==150), ]
+features3
+
+```
+# Loops
+
+## For loop
+
+```{r}
+set.seed(1)
+
+rv<-rnorm(1000)
+
+usq<-matrix("NA", 100, 1)
+
+
+for(i in 1:100) {
+  
+  usq[i] <- rv[i]*rv[i]
+  #print(usq[i])
+}
+
+usq<-data.frame(usq=as.numeric(unlist(usq)))
+attach(usq)
+ggplot(usq, aes(x=usq))+geom_histogram(col="black", fill="red")+xlab("x")+ylab("frequency")
+
+```
+
+## While loop 
+
+
+
+```{r}
+set.seed(1)
+
+
+usq<-matrix("NA", 100, 1)
+
+n = length(usq)
+x=0
+
+while (x<=n) {
+  x<-sum(x, 1)
+  i<-sum(i, 1)
+  usq[i] <- rv[i]*rv[i]
+  #print(usq[i])
+}
+
+usq<-data.frame(usq=as.numeric(unlist(usq)))
+attach(usq)
+ggplot(usq, aes(x=usq))+geom_histogram(col="black", fill="red")+xlab("x")+ylab("frequency")
+
+```
+
+
+
+```{r}
+weight
+height
+
+# Code the for loop with conditionals
+for (i in weight) {
+  if (i > 80) {
+    print("You're an outlier!")
+  }
+  else {
+    print("Nothing to see here!")
+  }
+  print(i)
+}
+```
+
+# What is a function in R?
+
+
+An R function is created by using the keyword *function*. The basic syntax of an R function definition is as follows:
+
+
+```{r}
+function_name <- function(arg_1,..) {
+   Function_body 
+}
+```
+
+## Example 1: Perfect squares 
+
+```{r}
+#Create a function to print out the values for perfect squares. 
+perfect.squares<-function(x){for (x in 1:10){
+  if(x%%x == 0)
+    b<-x^2
+  print (b)
+}}
+
+#pass a value to the function
+perfect.squares(10)
+```
+
+## Example 2: Processing course grades
+
+```{r}
+#Create a function with more than one argument
+translate<-function(x,y){
+  if (x=="NA"){x=0}
+  else if (x!="NA"){x=x}
+  print(x)
+  if (y== -1){y="NA"}
+  else if (y!=-1){y=y}
+  print(y)
+
+}
+
+
+#Testing the function with input values 
+x<-"NA"
+y<-"-1"
+
+x2<-1
+y2<-0
+
+translate(x, y)
+translate(x2, y2)
+```
+
+
+## Ifelse function in R
+
+In order to understand the brilliance of this function let's go back to the toy example 2.
+
+```{r}
+x3<-c(0, "NA", 1)
+y3<-c(-1, "NA", 80)
+
+translate(x3,y3)
+```
+
+
+The `ifelse` is a built in base R function that returns a value with the same length as the test, rather than the evaluation at the first element. The elements selected from either `yes` or `no` depend on whether the `yes` condition is true or false. 
+
+```{r}
+z<-x3
+ifelse(z==0, "NA", z)
+```
+More on this a bit later when I get to subsetting and/or data manipulation in R. 
+
+
+#Subset function and tidy data
+
+I am developing an R package for grade processing:
+
+```{r}
+#Base R
+#data = read.csv("StatisticsGrades.csv")
+
+#Tlibrary(tidyverse)
+#data = read_csv("StatisticsGrades.csv")
+#attach(data)
+
+#This will not be runnnable on your end so use the above vode. 
+library(myPackage)
+attach(Grades)
+
+head(Grades)
+
+TT1 = `Term Test 1 (/505)` 
+TT2= `Term Test 2 (/57)`
+
+
+```
+
+The data set I will work with is inside of the package I am developing but is currently not available on Git. 
+
+```{r}
+
+dim(Grades)
+
+#change the name to data for your own data frame from Grades
+newdata <- subset(Grades, TT1 !=-1 | TT2!= -1,)
+dim(newdata)
+
+
+newgrades <- subset(Grades, TT1 !=-1 & TT2!= -1,)
+dim(newgrades)
+
+```
+
+
+The first subset data scanned students that had either a TT1 or TT2 with a "-1" indicator. The second subset data set looked for students who had both TT1 and TT2 grades missing. 
+
+## new.function in myPackage
+
+```{r, eval=F}
+TT1_new = new.grades(TT1)
+TT1_new
+
+TT2_new = new.grades(TT2)
+
+TT_new = subset(Grades, TT1_new!="NA" & TT2_new!="NA")
+dim(TT_new)
+
+TT_nu<-as.numeric(unlist(TT_new))
+```
+
+I have gone further than removing "-1". Any "NA"s in the data set. I converted those students without a noted absence to a value of "0." It turns out that there are no true 0's in this data set. 
+
+## Tidyverse 
+
+Is there an asssociation between TT1 grades and TT2 grades? You can refer to the data set called 'newgrades.'
+
+```{r}
+#install.packages("tidyverse")
+library(tidyverse)
+
+newgrades<-newgrades %>% mutate(TT1=`Term Test 1 (/505)`, TT2=`Term Test 2 (/57)`)
+attach(newgrades)
+
+ggplot(newgrades, aes(x=TT1, y=TT2))+geom_point()+geom_smooth(method="lm")
+```
+
